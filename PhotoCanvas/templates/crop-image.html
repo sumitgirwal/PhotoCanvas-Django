@@ -1,0 +1,70 @@
+{% extends 'core/base.html' %}
+{% load static %}
+{% load crispy_forms_tags %} 
+{% block title %} Crop Image {% endblock %}
+
+{% block style %}
+<style>
+.uploader {position:relative; overflow:hidden; width:300px; height:350px; background:#f3f3f3; border:2px dashed #e8e8e8;}
+
+#filePhoto{
+    position:absolute;
+    width: 600px;
+    height: 200px;
+    text-align: center;
+    top:-50px;
+    left:0;
+    z-index:2;
+    opacity:0;
+    cursor:pointer;
+}
+
+.uploader img{
+    position:absolute;
+    width:302px;
+    height:352px;
+    top:-1px;
+    left:-1px;
+    z-index:1;
+    border:none;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+
+
+<div class="container my-5">
+    <div class="row mt-3">
+         
+        <div class="uploader" onclick="$('#filePhoto').click()">
+            click here or drag here your images for preview and set userprofile_picture data
+            <img src=""/>
+            <input type="file" name="userprofile_picture"  id="filePhoto" />
+        </div>
+    </div>
+</div>
+
+
+
+{% endblock %}
+
+
+{% block javascript %}
+<script>
+    $(document).ready(function () {
+        var imageLoader = document.getElementById('filePhoto');
+        imageLoader.addEventListener('change', handleImage, false);
+
+        function handleImage(e) {
+            var reader = new FileReader();
+            reader.onload = function (event) {
+                
+                $('.uploader img').attr('src',event.target.result);
+            }
+            reader.readAsDataURL(e.target.files[0]);
+        }
+
+    });
+</script>
+{% endblock %}
