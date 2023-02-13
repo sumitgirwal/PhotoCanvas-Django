@@ -1,70 +1,106 @@
 {% extends 'core/base.html' %}
-{% load static %}
-{% load crispy_forms_tags %} 
 {% block title %} Crop Image {% endblock %}
-
-{% block style %}
-<style>
-.uploader {position:relative; overflow:hidden; width:300px; height:350px; background:#f3f3f3; border:2px dashed #e8e8e8;}
-
-#filePhoto{
-    position:absolute;
-    width: 600px;
-    height: 200px;
-    text-align: center;
-    top:-50px;
-    left:0;
-    z-index:2;
-    opacity:0;
-    cursor:pointer;
-}
-
-.uploader img{
-    position:absolute;
-    width:302px;
-    height:352px;
-    top:-1px;
-    left:-1px;
-    z-index:1;
-    border:none;
-}
-</style>
-{% endblock %}
-
 {% block content %}
 
-
-<div class="container my-5">
-    <div class="row mt-3">
-         
-        <div class="uploader" onclick="$('#filePhoto').click()">
-            click here or drag here your images for preview and set userprofile_picture data
-            <img src=""/>
-            <input type="file" name="userprofile_picture"  id="filePhoto" />
+<div class="container-fluid bg-dark  p-5">
+    <div class="row g-3">
+    <div class="col-md-6 offset-md-3">
+        <div class="card border-0 shadow-md ">
+            <div class="card-header bg-secondary text-light">
+                <h3>Crop Image</h3>
+            </div>
+            <div class="card-body">
+                <div id="uploadImage"></div>
+                <div class="mb-3">
+                    <label for="formFile" class="form-label">
+                        Select Image :</label>
+                    <input class="form-control" type="file" id="image">
+                </div>
+                <button class="btn btn-outline-secondary btn-block text-uppercase" id="btn-upload-image">
+                    <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                    Crop Image</button>
+                    <div id="preview" style="background:#9d9d9d; width:300px; padding:50px 50px; height:300px;"></div>
+            </div>
         </div>
     </div>
+     
+   </div>
 </div>
+ <script type="text/javascript">
 
 
+$( document ).ready(function() {
+    
+    // $('#uploadImage').hide();
+    $('#preview').hide();
+   
 
-{% endblock %}
 
-
-{% block javascript %}
-<script>
-    $(document).ready(function () {
-        var imageLoader = document.getElementById('filePhoto');
-        imageLoader.addEventListener('change', handleImage, false);
-
-        function handleImage(e) {
-            var reader = new FileReader();
-            reader.onload = function (event) {
-                
-                $('.uploader img').attr('src',event.target.result);
-            }
-            reader.readAsDataURL(e.target.files[0]);
+    var resize = $('#uploadImage').croppie({
+        enableExif: true,
+        enableOrientation: true,
+        viewport: { // Default { width: 100, height: 100, type: 'square' } 
+            width: 200,
+            height: 200,
+            type: 'square' //cicle
+        },
+        boundary: {
+            width: 300,
+            height: 300
         }
-
     });
+
+
+    $('#image').on('change', function () {
+        var reader = new FileReader();
+        reader.onload = function (e) {
+            resize.croppie('bind', {
+                url: e.target.result
+            }).then(function () {
+                $('#uploadImage').show();
+                console.log('jQuery bind complete');
+            });
+        }
+        reader.readAsDataURL(this.files[0]);
+    });
+
+
+    $('#btn-upload-image').on('click', function (ev) {
+        resize.croppie('result', {
+            type: 'canvas',
+            size: 'viewport'
+        }).then(function (img) {
+            console.log('Working....................');
+            console.log(img);
+            
+
+            var serializedData = new FormData();    
+            serializedData.append( 'cropped_image', img );
+
+            console.log(serializedData)
+
+            $.ajax({
+                url: "{% url 'upload_image' %}",
+                type: "POST",
+                data: serializedData,
+                dataType: 'json',
+                cache:false,
+                contentType: false,
+                processData: false,
+                success: function (data) {
+                    console.log(data);
+
+                    $('#preview').show();
+                    html = '<img src="' + img + '" />';
+                    $("#preview-crop-image").html(html);
+                }
+            });
+        });
+    });
+
+});
 </script>
+
+
+
 {% endblock %}

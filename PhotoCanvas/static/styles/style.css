@@ -7,6 +7,6 @@
  
  
 body {
-    font-family: 'Poppins', sans-serif;
+    font-family: 'Poppins', sans-serif !important;
     background-color: rgb(244, 249, 250);
 }
